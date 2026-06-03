@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Elysium — Administración</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#F7F5F0;--surface:#FFF;--surface2:#F0EDE6;--border:#E2DDD5;
+    --accent:#1B3A2F;--accent2:#2E6B54;--gold:#C4973A;--red:#C0392B;--green:#27AE60;
+    --text:#1A1A18;--muted:#8A8680;--serif:'DM Serif Display',serif;--sans:'DM Sans',sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:var(--sans);background:var(--bg);color:var(--text);min-height:100vh;}
+  header{background:var(--accent);color:#fff;padding:0 32px;display:flex;align-items:center;justify-content:space-between;height:64px;position:sticky;top:0;z-index:100;}
+  header h1{font-family:var(--serif);font-size:22px;letter-spacing:.04em;}
+  header span{font-size:12px;opacity:.6;}
+  nav{background:var(--surface);border-bottom:1px solid var(--border);padding:0 32px;display:flex;}
+  nav button{background:none;border:none;border-bottom:3px solid transparent;padding:15px 22px;font-family:var(--sans);font-size:14px;font-weight:500;color:var(--muted);cursor:pointer;transition:all .2s;}
+  nav button.active{color:var(--accent);border-bottom-color:var(--accent);}
+  nav button:hover:not(.active){color:var(--text);}
+  main{padding:28px 32px;max-width:1200px;margin:0 auto;}
+  .section{display:none;}.section.active{display:block;}
+  .cards{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:28px;}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px 24px;}
+  .card label{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:8px;}
+  .card .val{font-family:var(--serif);font-size:28px;}
+  .green{color:var(--green);}.red{color:var(--red);}.gold{color:var(--gold);}
+  .sec-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;}
+  .sec-header h2{font-family:var(--serif);font-size:22px;}
+  .btn{display:inline-flex;align-items:center;gap:7px;padding:9px 18px;border-radius:8px;font-family:var(--sans);font-size:13px;font-weight:500;cursor:pointer;border:none;transition:all .15s;}
+  .btn-primary{background:var(--accent);color:#fff;}.btn-primary:hover{background:var(--accent2);}
+  .btn-secondary{background:var(--surface2);color:var(--text);border:1px solid var(--border);}.btn-secondary:hover{background:var(--border);}
+  .btn-danger{background:#FDF0EF;color:var(--red);border:1px solid #F5C6C2;}
+  .btn-gold{background:var(--gold);color:#fff;}
+  .btn-sm{padding:5px 11px;font-size:12px;}
+  .table-wrap{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;}
+  table{width:100%;border-collapse:collapse;}
+  thead{background:var(--accent);}
+  thead th{text-align:left;padding:13px 16px;font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:rgba(255,255,255,.75);}
+  tbody tr{border-bottom:1px solid var(--border);transition:background .1s;}
+  tbody tr:last-child{border-bottom:none;}
+  tbody tr:hover{background:var(--bg);}
+  tbody td{padding:12px 16px;font-size:14px;}
+  .badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;}
+  .badge-green{background:#E8F8EF;color:var(--green);}
+  .badge-red{background:#FDF0EF;color:var(--red);}
+  .badge-gold{background:#FDF6E8;color:var(--gold);}
+  .overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:200;align-items:center;justify-content:center;}
+  .overlay.open{display:flex;}
+  .modal{background:var(--surface);border-radius:16px;padding:32px;width:500px;max-width:95vw;max-height:90vh;overflow-y:auto;}
+  .modal h3{font-family:var(--serif);font-size:22px;margin-bottom:22px;}
+  .form-group{margin-bottom:16px;}
+  .form-group label{display:block;font-size:11px;font-weight:600;color:var(--muted);margin-bottom:5px;letter-spacing:.05em;text-transform:uppercase;}
+  .form-group input,.form-group select{width:100%;padding:9px 13px;border:1px solid var(--border);border-radius:8px;font-family:var(--sans);font-size:14px;background:var(--bg);color:var(--text);outline:none;transition:border .2s;}
+  .form-group input:focus,.form-group select:focus{border-color:var(--accent2);}
+  .form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+  .modal-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:22px;}
+  .month-bar{display:flex;align-items:center;gap:12px;margin-bottom:22px;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 20px;}
+  .month-bar label{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;}
+  .month-bar select{padding:7px 12px;border:1px solid var(--border);border-radius:6px;font-family:var(--sans);font-size:14px;background:var(--bg);outline:none;}
+  .drop-zone{border:2px dashed var(--border);border-radius:10px;padding:20px;text-align:center;cursor:pointer;transition:all .2s;background:var(--bg);}
+  .drop-zone:hover{border-color:var(--accent2);background:#EFF7F3;}
+  .drop-zone p{font-size:13px;color:var(--muted);margin-top:6px;}
+  .file-preview{margin-top:8px;font-size:12px;color:var(--accent2);font-weight:500;}
+  .report-box{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:32px;}
+  .report-divider{border:none;border-top:1px solid var(--border);margin:20px 0;}
+  .loading{text-align:center;padding:48px;color:var(--muted);font-size:14px;}
+  .spinner{width:28px;height:28px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 14px;}
+  @keyframes spin{to{transform:rotate(360deg);}}
+  .empty{text-align:center;padding:40px;color:var(--muted);font-size:14px;}
+  .info-bar{background:#EFF7F3;border:1px solid #B8DEC9;border-radius:8px;padding:10px 16px;font-size:13px;color:var(--accent2);margin-bottom:16px;}
+  #toast{position:fixed;bottom:28px;right:28px;background:var(--accent);color:#fff;padding:12px 22px;border-radius:10px;font-size:14px;font-weight:500;opacity:0;transform:translateY(10px);transition:all .3s;z-index:999;pointer-events:none;}
+  #toast.show{opacity:1;transform:translateY(0);}#toast.error{background:var(--red);}
+  @media print{
+    header,nav,.month-bar,.btn,#toast{display:none!important;}
+    main{padding:0!important;}
+    .section{display:block!important;}
+    #s-dashboard,#s-locales,#s-egresos{display:none!important;}
+    #s-reporte{display:block!important;}
+    .report-box{border:none!important;padding:0!important;}
+    body{background:#fff!important;}
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1>Elysium</h1>
+  <span id="hPeriod"></span>
+</header>
+<nav>
+  <button class="active" onclick="showTab('dashboard',this)">Dashboard</button>
+  <button onclick="showTab('locales',this)">Locales</button>
+  <button onclick="showTab('egresos',this)">Egresos</button>
+  <button onclick="showTab('reporte',this)">Reporte Mensual</button>
+</nav>
+<main>
+
+  <!-- DASHBOARD -->
+  <section id="s-dashboard" class="section active">
+    <div class="month-bar">
+      <label>Período</label>
+      <select id="d-mes" onchange="onPeriodChange()"></select>
+      <select id="d-anio" onchange="onPeriodChange()"></select>
+      <button class="btn btn-secondary btn-sm" onclick="loadAll()">↻ Actualizar</button>
+    </div>
+    <div id="dash-loading" class="loading"><div class="spinner"></div>Conectando a Supabase...</div>
+    <div id="dash-content" style="display:none">
+      <div class="cards">
+        <div class="card"><label>Cuotas esperadas</label><div class="val gold" id="k-esp">—</div></div>
+        <div class="card"><label>Cobrado</label><div class="val green" id="k-cob">—</div></div>
+        <div class="card"><label>Egresos del mes</label><div class="val red" id="k-eg">—</div></div>
+        <div class="card"><label>Saldo neto</label><div class="val" id="k-sal">—</div></div>
+      </div>
+      <div class="sec-header">
+        <h2>Pendientes de pago</h2>
+        <span id="pend-count" style="font-size:13px;color:var(--muted)"></span>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Local</th><th>Propietario</th><th>Cuota</th><th>Estado</th></tr></thead>
+          <tbody id="tbl-pend"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- LOCALES -->
+  <section id="s-locales" class="section">
+    <div class="sec-header">
+      <h2>Locales y Propietarios</h2>
+      <button class="btn btn-secondary" onclick="loadLocales()">↻ Recargar</button>
+    </div>
+    <div class="info-bar">Locales de Elysium (números 1–99) leídos de tu Supabase — tabla <strong>locales</strong></div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Local</th><th>Propietario</th><th>Tipo</th><th>Cuota mensual</th></tr></thead>
+        <tbody id="tbl-loc"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- EGRESOS -->
+  <section id="s-egresos" class="section">
+    <div class="month-bar">
+      <label>Período</label>
+      <select id="e-mes" onchange="renderEgresos()"></select>
+      <select id="e-anio" onchange="renderEgresos()"></select>
+    </div>
+    <div class="sec-header">
+      <h2>Egresos y Facturas</h2>
+      <button class="btn btn-primary" onclick="openModal('modal-eg')">+ Registrar egreso</button>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Fecha</th><th>Concepto</th><th>Proveedor</th><th>Categoría</th><th>Monto</th><th>Factura</th><th></th></tr></thead>
+        <tbody id="tbl-eg"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- REPORTE -->
+  <section id="s-reporte" class="section">
+    <div class="month-bar">
+      <label>Período</label>
+      <select id="r-mes" onchange="renderReporte()"></select>
+      <select id="r-anio" onchange="renderReporte()"></select>
+      <button class="btn btn-gold btn-sm" onclick="window.print()">⬇ PDF / Imprimir</button>
+    </div>
+    <div class="report-box" id="rep-box">
+      <div class="loading"><div class="spinner"></div>Generando...</div>
+    </div>
+  </section>
+
+</main>
+
+<!-- Modal Egreso -->
+<div class="overlay" id="modal-eg">
+  <div class="modal">
+    <h3>Registrar Egreso</h3>
+    <div class="form-row">
+      <div class="form-group"><label>Fecha</label><input type="date" id="eg-fecha"></div>
+      <div class="form-group"><label>Monto ($)</label><input type="number" id="eg-monto"></div>
+    </div>
+    <div class="form-group"><label>Concepto</label><input type="text" id="eg-concepto" placeholder="Ej. Limpieza, Luz"></div>
+    <div class="form-group"><label>Proveedor</label><input type="text" id="eg-proveedor"></div>
+    <div class="form-group">
+      <label>Categoría</label>
+      <select id="eg-cat">
+        <option>Mantenimiento</option><option>Limpieza</option><option>Electricidad</option>
+        <option>Agua</option><option>Seguridad</option><option>Reparaciones</option>
+        <option>Administración</option><option>Otro</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Factura / Comprobante</label>
+      <div class="drop-zone" onclick="document.getElementById('eg-file').click()">
+        <div style="font-size:26px">📄</div>
+        <p>Clic o arrastra el PDF o imagen</p>
+        <div class="file-preview" id="eg-fname"></div>
+      </div>
+      <input type="file" id="eg-file" accept=".pdf,image/*" style="display:none" onchange="handleFile(this)">
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeModal('modal-eg')">Cancelar</button>
+      <button class="btn btn-primary" onclick="saveEg()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+// ── CONFIG ────────────────────────────────────────────────
+const SB  = 'https://mqzuaxxnidaokhdqcurm.supabase.co/rest/v1';
+const KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1xenVheHhuaWRhb2toZHFjdXJtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU4Mzg2NDEsImV4cCI6MjA5MTQxNDY0MX0.vHSAuwxc_q-JvmRMkFsaGEPHtjsjqEln3QbREa9B-VU';
+const H   = { 'apikey':KEY, 'Authorization':`Bearer ${KEY}`, 'Content-Type':'application/json', 'Prefer':'return=representation' };
+
+// Locales de Elysium = número local entre 1 y 99 (un máximo de 2 dígitos)
+const esElysium = local => {
+  const n = parseInt(local);
+  return !isNaN(n) && n >= 1 && n <= 99;
+};
+
+// Meses cortos como los guarda Supabase
+const MESES_CORTO = ['ENE','FEB','MAR','ABR','MAY','JUN','JUL','AGO','SEP','OCT','NOV','DIC'];
+const MESES_LARGO = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+
+// ── STATE ─────────────────────────────────────────────────
+let localesData = [];
+let pagosData   = [];
+let egresosLocal = JSON.parse(localStorage.getItem('ely_eg') || '[]');
+let curFileData = null, curFileName = null;
+
+// ── SUPABASE ──────────────────────────────────────────────
+async function sb(path) {
+  const r = await fetch(`${SB}/${path}`, { headers: H });
+  if (!r.ok) throw new Error(await r.text());
+  return r.json();
+}
+
+// ── INIT ──────────────────────────────────────────────────
+function init() {
+  buildSelects();
+  loadAll();
+}
+
+function buildSelects() {
+  const now = new Date();
+  ['d','e','r'].forEach(p => {
+    const ms = document.getElementById(p+'-mes');
+    const an = document.getElementById(p+'-anio');
+    if (!ms || !an) return;
+    MESES_LARGO.forEach((m,i) => {
+      const o = document.createElement('option');
+      o.value = MESES_CORTO[i];
+      o.textContent = m;
+      if (i === now.getMonth()) o.selected = true;
+      ms.appendChild(o);
+    });
+    for (let y = 2024; y <= 2030; y++) {
+      const o = document.createElement('option');
+      o.value = y; o.textContent = y;
+      if (y === now.getFullYear()) o.selected = true;
+      an.appendChild(o);
+    }
+  });
+  updateHeader();
+}
+
+function getPeriod(p) {
+  return {
+    mes:  document.getElementById(p+'-mes').value,   // "MAY"
+    anio: document.getElementById(p+'-anio').value    // "2026"
+  };
+}
+
+function updateHeader() {
+  const { mes, anio } = getPeriod('d');
+  const idx = MESES_CORTO.indexOf(mes);
+  document.getElementById('hPeriod').textContent = `${MESES_LARGO[idx]} ${anio}`;
+}
+
+function onPeriodChange() { updateHeader(); renderDashboard(); }
+
+async function loadAll() {
+  document.getElementById('dash-loading').style.display = 'block';
+  document.getElementById('dash-content').style.display = 'none';
+  try {
+    await Promise.all([loadLocales(), loadPagos()]);
+    renderDashboard();
+  } catch(e) {
+    toast('Error Supabase: ' + e.message, true);
+    document.getElementById('dash-loading').style.display = 'none';
+    document.getElementById('dash-content').style.display = 'block';
+    return;
+  }
+  document.getElementById('dash-loading').style.display = 'none';
+  document.getElementById('dash-content').style.display = 'block';
+}
+
+async function loadLocales() {
+  // Solo locales tipo 'elysium'
+  const raw = await sb('locales?select=*&tipo=eq.elysium');
+localesData = raw.sort((a,b) => {
+  const na = parseInt(a.local) || 0;
+  const nb = parseInt(b.local) || 0;
+  if (na !== nb) return na - nb;
+  return String(a.local).localeCompare(String(b.local));
+});
+  renderLocalesTable();
+}
+
+async function loadPagos() {
+  // Pagos tipo mtto cuyo local exista en localesData
+  const elysiumLocales = new Set(localesData.map(l => String(l.local)));
+  const all = await sb('pagos?select=*&tipo=eq.mtto&order=fecha.desc&limit=2000');
+  pagosData = all.filter(p => elysiumLocales.has(String(p.local)));
+}
+
+// ── HELPERS ───────────────────────────────────────────────
+const fmt = n => '$' + Number(n||0).toLocaleString('es-MX');
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2);
+
+function pagoEnPeriodo(pago, mes, anio) {
+  // mes = "JUN", anio = "2026"
+  // Primero intentar cruzar por campo mes + año en fecha
+  if (pago.mes && pago.mes.toUpperCase() === mes.toUpperCase()) {
+    if (pago.fecha && pago.fecha.startsWith(anio)) return true;
+    if (!pago.fecha) return true;
+  }
+  // Fallback: cruzar solo por fecha
+  if (pago.fecha && pago.fecha.startsWith(anio)) {
+    const mIdx = parseInt(pago.fecha.slice(5,7)) - 1;
+    if (MESES_CORTO[mIdx] === mes) return true;
+  }
+  return false;
+}
+
+function cuotaLocal(l) {
+  return Number(l.cantidad || l.cuota || 2000);
+}
+
+// ── DASHBOARD ─────────────────────────────────────────────
+function renderDashboard() {
+  const { mes, anio } = getPeriod('d');
+  const pagosMes = pagosData.filter(p => pagoEnPeriodo(p, mes, anio));
+  const totalEsp = localesData.reduce((s,l) => s + cuotaLocal(l), 0);
+  const totalCob = pagosMes.reduce((s,p) => s + Number(p.monto||0), 0);
+
+  const egMes = egEnPeriodo(mes, anio);
+  const totalEg = egMes.reduce((s,e) => s + Number(e.monto||0), 0);
+  const saldo   = totalCob - totalEg;
+
+  document.getElementById('k-esp').textContent = fmt(totalEsp);
+  document.getElementById('k-cob').textContent = fmt(totalCob);
+  document.getElementById('k-eg').textContent  = fmt(totalEg);
+  const ks = document.getElementById('k-sal');
+  ks.textContent = fmt(saldo);
+  ks.className = 'val ' + (saldo >= 0 ? 'green' : 'red');
+
+  // Pendientes: locales sin pago este mes
+  const pagadosLocales = new Set(pagosMes.map(p => String(p.local)));
+  const pendientes = localesData.filter(l => !pagadosLocales.has(String(l.local)));
+  const pagados    = localesData.filter(l =>  pagadosLocales.has(String(l.local)));
+
+  document.getElementById('pend-count').textContent =
+    `${pendientes.length} pendientes · ${pagados.length} pagados`;
+
+  const tbody = document.getElementById('tbl-pend');
+  if (!pendientes.length) {
+    tbody.innerHTML = `<tr><td colspan="4" class="empty">✅ Todos los locales pagaron este mes</td></tr>`;
+    return;
+  }
+  tbody.innerHTML = pendientes.map(l => `<tr>
+    <td><strong>Local ${l.local}</strong></td>
+    <td>${l.nombre||'—'}</td>
+    <td>${fmt(cuotaLocal(l))}</td>
+    <td><span class="badge badge-red">Pendiente</span></td>
+  </tr>`).join('');
+}
+
+// ── LOCALES ───────────────────────────────────────────────
+function renderLocalesTable() {
+  const tbody = document.getElementById('tbl-loc');
+  if (!localesData.length) {
+    tbody.innerHTML = `<tr><td colspan="4" class="empty">Sin locales encontrados</td></tr>`;
+    return;
+  }
+  tbody.innerHTML = localesData.map(l => `<tr>
+    <td><strong>Local ${l.local}</strong></td>
+    <td>${l.nombre||'—'}</td>
+    <td>${l.tipo||'—'}</td>
+    <td>${fmt(cuotaLocal(l))}</td>
+  </tr>`).join('');
+}
+
+// ── EGRESOS ───────────────────────────────────────────────
+function egEnPeriodo(mes, anio) {
+  return egresosLocal.filter(e => {
+    if (!e.fecha) return false;
+    const d = new Date(e.fecha + 'T12:00:00');
+    return MESES_CORTO[d.getMonth()] === mes && String(d.getFullYear()) === anio;
+  });
+}
+
+function renderEgresos() {
+  const { mes, anio } = getPeriod('e');
+  const filtered = egEnPeriodo(mes, anio);
+  const total = filtered.reduce((s,e) => s + Number(e.monto||0), 0);
+  const tbody = document.getElementById('tbl-eg');
+  if (!filtered.length) {
+    tbody.innerHTML = `<tr><td colspan="7" class="empty">Sin egresos registrados este mes</td></tr>`;
+    return;
+  }
+  tbody.innerHTML = filtered.map(e => `<tr>
+    <td>${e.fecha}</td>
+    <td>${e.concepto}</td>
+    <td>${e.proveedor||'—'}</td>
+    <td><span class="badge badge-gold">${e.categoria}</span></td>
+    <td><strong>${fmt(e.monto)}</strong></td>
+    <td>${e.fileData?`<a href="${e.fileData}" download="${e.fileName}" style="color:var(--accent2);font-weight:600;font-size:13px">📎 Ver</a>`:'—'}</td>
+    <td><button class="btn btn-danger btn-sm" onclick="deleteEg('${e.id}')">✕</button></td>
+  </tr>`).join('');
+  tbody.innerHTML += `<tr style="background:var(--surface2)">
+    <td colspan="4" style="text-align:right;font-weight:600;font-size:13px">Total del mes:</td>
+    <td><strong class="red">${fmt(total)}</strong></td><td></td><td></td>
+  </tr>`;
+}
+
+function handleFile(input) {
+  const file = input.files[0]; if (!file) return;
+  curFileName = file.name;
+  document.getElementById('eg-fname').textContent = '📎 ' + file.name;
+  const reader = new FileReader();
+  reader.onload = e => { curFileData = e.target.result; };
+  reader.readAsDataURL(file);
+}
+
+function saveEg() {
+  const fecha    = document.getElementById('eg-fecha').value;
+  const monto    = parseFloat(document.getElementById('eg-monto').value);
+  const concepto = document.getElementById('eg-concepto').value.trim();
+  const proveedor= document.getElementById('eg-proveedor').value.trim();
+  const categoria= document.getElementById('eg-cat').value;
+  if (!fecha||!monto||!concepto) return toast('Completa fecha, concepto y monto', true);
+  egresosLocal.push({ id:uid(), fecha, monto, concepto, proveedor, categoria, fileData:curFileData, fileName:curFileName });
+  localStorage.setItem('ely_eg', JSON.stringify(egresosLocal));
+  curFileData = null; curFileName = null;
+  document.getElementById('eg-fname').textContent = '';
+  document.getElementById('eg-file').value = '';
+  closeModal('modal-eg');
+  renderEgresos(); renderDashboard();
+  toast('Egreso guardado');
+}
+
+function deleteEg(id) {
+  if (!confirm('¿Eliminar este egreso?')) return;
+  egresosLocal = egresosLocal.filter(e => e.id !== id);
+  localStorage.setItem('ely_eg', JSON.stringify(egresosLocal));
+  renderEgresos(); renderDashboard();
+  toast('Egreso eliminado');
+}
+
+// ── REPORTE ───────────────────────────────────────────────
+function renderReporte() {
+  const { mes, anio } = getPeriod('r');
+  const idx   = MESES_CORTO.indexOf(mes);
+  const label = `${MESES_LARGO[idx]} ${anio}`;
+  const pagosMes = pagosData.filter(p => pagoEnPeriodo(p, mes, anio));
+  const egMes    = egEnPeriodo(mes, anio);
+  const totalEsp = localesData.reduce((s,l) => s + cuotaLocal(l), 0);
+  const totalIng = pagosMes.reduce((s,p) => s + Number(p.monto||0), 0);
+  const totalEg  = egMes.reduce((s,e) => s + Number(e.monto||0), 0);
+  const saldo    = totalIng - totalEg;
+  const pct      = totalEsp > 0 ? Math.round(totalIng/totalEsp*100) : 0;
+  const pagadosSet = new Set(pagosMes.map(p => String(p.local)));
+  const pendientes = localesData.filter(l => !pagadosSet.has(String(l.local)));
+
+  document.getElementById('rep-box').innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:28px">
+      <div>
+        <div style="font-family:var(--serif);font-size:32px">Reporte Mensual</div>
+        <div style="color:var(--muted);font-size:14px;margin-top:4px">Elysium &nbsp;·&nbsp; ${label}</div>
+      </div>
+      <div style="text-align:right">
+        <div style="font-size:11px;color:var(--muted);margin-bottom:4px;text-transform:uppercase;letter-spacing:.06em">Cobranza</div>
+        <div style="font-size:40px;font-family:var(--serif);color:${pct>=80?'var(--green)':pct>=50?'var(--gold)':'var(--red)'}">${pct}%</div>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:28px">
+      ${[
+        ['Ingresos cobrados', fmt(totalIng), 'var(--green)', `Esperado: ${fmt(totalEsp)}`],
+        ['Egresos', fmt(totalEg), 'var(--red)', `${egMes.length} concepto(s)`],
+        ['Saldo neto', fmt(saldo), saldo>=0?'var(--green)':'var(--red)', ''],
+      ].map(([lb,v,c,s])=>`<div style="background:var(--bg);border-radius:10px;padding:16px;border:1px solid var(--border)">
+        <div style="font-size:11px;font-weight:600;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;margin-bottom:6px">${lb}</div>
+        <div style="font-size:26px;font-family:var(--serif);color:${c}">${v}</div>
+        ${s?`<div style="font-size:12px;color:var(--muted);margin-top:4px">${s}</div>`:''}
+      </div>`).join('')}
+    </div>
+
+    <hr class="report-divider">
+    <h3 style="font-family:var(--serif);font-size:20px;margin-bottom:16px">Ingresos — ${pagosMes.length} pago(s)</h3>
+    ${!pagosMes.length ? '<p style="color:var(--muted);font-size:14px;margin-bottom:20px">Sin pagos en Supabase para este período.</p>' :
+    `<table style="width:100%;border-collapse:collapse;margin-bottom:20px;font-size:13px">
+      <thead><tr style="background:var(--accent)">
+        ${['Fecha','Local','Propietario','Forma','Monto'].map(h=>`<th style="text-align:left;padding:10px 12px;color:rgba(255,255,255,.75);font-size:11px;letter-spacing:.06em">${h}</th>`).join('')}
+      </tr></thead>
+      <tbody>
+        ${pagosMes.map((p,i)=>{
+          const loc = localesData.find(l=>String(l.local)===String(p.local));
+          return `<tr style="border-bottom:1px solid var(--border);background:${i%2===0?'var(--bg)':'#fff'}">
+            <td style="padding:10px 12px">${p.fecha||'—'}</td>
+            <td style="padding:10px 12px"><strong>Local ${p.local}</strong></td>
+            <td style="padding:10px 12px">${loc?loc.nombre:'—'}</td>
+            <td style="padding:10px 12px">${p.forma||'—'}</td>
+            <td style="padding:10px 12px;font-weight:600;color:var(--green)">${fmt(p.monto)}</td>
+          </tr>`;
+        }).join('')}
+        <tr style="background:var(--surface2)">
+          <td colspan="4" style="padding:10px 12px;font-weight:600;text-align:right">Total:</td>
+          <td style="padding:10px 12px;font-weight:700;color:var(--green)">${fmt(totalIng)}</td>
+        </tr>
+      </tbody>
+    </table>`}
+
+    <hr class="report-divider">
+    <h3 style="font-family:var(--serif);font-size:20px;margin-bottom:16px">Egresos</h3>
+    ${!egMes.length ? '<p style="color:var(--muted);font-size:14px;margin-bottom:20px">Sin egresos registrados.</p>' :
+    `<table style="width:100%;border-collapse:collapse;margin-bottom:20px;font-size:13px">
+      <thead><tr style="background:var(--accent)">
+        ${['Fecha','Concepto','Proveedor','Categoría','Monto','Factura'].map(h=>`<th style="text-align:left;padding:10px 12px;color:rgba(255,255,255,.75);font-size:11px">${h}</th>`).join('')}
+      </tr></thead>
+      <tbody>
+        ${egMes.map((e,i)=>`<tr style="border-bottom:1px solid var(--border);background:${i%2===0?'var(--bg)':'#fff'}">
+          <td style="padding:10px 12px">${e.fecha}</td>
+          <td style="padding:10px 12px">${e.concepto}</td>
+          <td style="padding:10px 12px">${e.proveedor||'—'}</td>
+          <td style="padding:10px 12px"><span class="badge badge-gold">${e.categoria}</span></td>
+          <td style="padding:10px 12px;font-weight:600;color:var(--red)">${fmt(e.monto)}</td>
+          <td style="padding:10px 12px">${e.fileData?`<a href="${e.fileData}" download="${e.fileName}">📎</a>`:'—'}</td>
+        </tr>`).join('')}
+        <tr style="background:var(--surface2)">
+          <td colspan="4" style="padding:10px 12px;font-weight:600;text-align:right">Total:</td>
+          <td style="padding:10px 12px;font-weight:700;color:var(--red)">${fmt(totalEg)}</td><td></td>
+        </tr>
+      </tbody>
+    </table>`}
+
+    ${pendientes.length ? `
+    <hr class="report-divider">
+    <h3 style="font-family:var(--serif);font-size:20px;margin-bottom:14px;color:var(--red)">Pendientes — ${pendientes.length} local(es)</h3>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px">
+      ${pendientes.map(l=>`<div style="padding:10px 14px;background:#FDF0EF;border-radius:8px;border:1px solid #F5C6C2;font-size:13px">
+        <strong>Local ${l.local}</strong><br>
+        <span style="color:var(--muted)">${l.nombre||'—'}</span><br>
+        <strong style="color:var(--red)">${fmt(cuotaLocal(l))}</strong>
+      </div>`).join('')}
+    </div>
+    <div style="background:#FDF0EF;border-radius:8px;padding:12px 18px;font-size:14px;font-weight:600;color:var(--red)">
+      Total pendiente: ${fmt(pendientes.reduce((s,l)=>s+cuotaLocal(l),0))}
+    </div>` : `
+    <hr class="report-divider">
+    <div style="background:#E8F8EF;border-radius:8px;padding:12px 18px;font-size:14px;font-weight:600;color:var(--green)">✅ Todos los locales pagaron en ${label}</div>`}
+
+    <hr class="report-divider" style="margin-top:28px">
+    <p style="font-size:11px;color:var(--muted);text-align:center">
+      Generado el ${new Date().toLocaleDateString('es-MX',{day:'2-digit',month:'long',year:'numeric'})} — Elysium Administración
+    </p>
+  `;
+}
+
+// ── UI ────────────────────────────────────────────────────
+function showTab(name, btn) {
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('nav button').forEach(b=>b.classList.remove('active'));
+  document.getElementById('s-'+name).classList.add('active');
+  if (btn) btn.classList.add('active');
+  if (name==='egresos') { syncPeriod('e'); renderEgresos(); }
+  if (name==='reporte') { syncPeriod('r'); renderReporte(); }
+  if (name==='locales') renderLocalesTable();
+}
+function syncPeriod(p) {
+  const { mes, anio } = getPeriod('d');
+  document.getElementById(p+'-mes').value = mes;
+  document.getElementById(p+'-anio').value = anio;
+}
+function openModal(id)  { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+let toastT;
+function toast(msg, err=false) {
+  const el = document.getElementById('toast');
+  el.textContent = msg; el.className = 'show'+(err?' error':'');
+  clearTimeout(toastT); toastT = setTimeout(()=>el.className='', 3200);
+}
+
+init();
+</script>
+</body>
+</html>
